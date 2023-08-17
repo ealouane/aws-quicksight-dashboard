@@ -1,0 +1,2235 @@
+import boto3
+from botocore.exceptions import ClientError
+import botocore
+
+
+account_id = '749787235016'
+region = 'us-east-1'
+# Initialize the AWS clients for different services
+ec2_client = boto3.client('ec2', region_name='us-east-1')
+s3_client = boto3.client('s3', region_name='us-east-1')
+rds_client = boto3.client('rds', region_name='us-east-1')
+lambda_client = boto3.client('lambda', region_name='us-east-1')
+dynamodb_client = boto3.client('dynamodb', region_name='us-east-1')
+sns_client = boto3.client('sns', region_name='us-east-1')
+sqs_client = boto3.client('sqs', region_name='us-east-1')
+cloudformation_client = boto3.client('cloudformation', region_name='us-east-1')
+mq_client = boto3.client('mq', region_name='us-east-1')
+appstream_client = boto3.client('appstream', region_name='us-east-1')
+acm_client = boto3.client('acm', region_name='us-east-1')
+cloudtrail_client = boto3.client('cloudtrail',  region_name='us-east-1')
+cloudwatch_client = boto3.client('cloudwatch', region_name='us-east-1')
+codeartifact_client = boto3.client('codeartifact')
+codebuild_client = boto3.client('codebuild')
+codecommit_client = boto3.client('codecommit', region_name=region)
+codeguru_client = boto3.client('codeguru-reviewer', region_name='us-east-1')
+codepipeline_client = boto3.client('codepipeline', region_name='us-east-1')
+cognito_identity_client = boto3.client('cognito-identity', region_name='us-east-1')
+cognito_idp_client = boto3.client('cognito-idp', region_name='us-east-1')
+config_client = boto3.client('config')
+dms_client = boto3.client('dms', region_name='us-east-1')
+databrew_client = boto3.client('databrew')
+data_exchange_client = boto3.client('dataexchange')
+data_pipeline_client = boto3.client('datapipeline')
+dynamodb_client = boto3.client('dynamodb')
+ecs_client = boto3.client('ecs')
+efs_client = boto3.client('efs')
+eks_client = boto3.client('eks')
+emr_client = boto3.client('emr')
+emr_containers_client = boto3.client('emr-containers')
+elasticache_client = boto3.client('elasticache')
+elasticbeanstalk_client = boto3.client('elasticbeanstalk')
+elastic_inference_client = boto3.client('elastic-inference')
+elb_client = boto3.client('elb')
+elbv2_client = boto3.client('elbv2')
+es_client = boto3.client('es')
+eventbridge_client = boto3.client('events')
+fsx_client = boto3.client('fsx')
+glacier_client = boto3.client('glacier')
+glue_client = boto3.client('glue')
+iot_analytics_client = boto3.client('iotanalytics')
+iot_events_client = boto3.client('iotevents')
+msk_client = boto3.client('kafka')
+kinesis_client = boto3.client('kinesis')
+kinesisanalytics_client = boto3.client('kinesisanalytics')
+qldb_client = boto3.client('qldb')
+redshift_client = boto3.client('redshift')
+resource_groups_client = boto3.client('resource-groups')
+route53_client = boto3.client('route53')
+sns_client = boto3.client('sns')
+sqs_client = boto3.client('sqs')
+storage_gateway_client = boto3.client('storagegateway')
+
+
+# Retrieve information about EC2 instances
+response = ec2_client.describe_instances()
+for reservation in response['Reservations']:
+    for instance in reservation['Instances']:
+        instance_id = instance['InstanceId']
+        tags = instance.get('Tags')
+
+        if tags is None:
+            print(f"No tags for EC2 instance '{instance_id}'")
+        else:
+            print(f"Tags for EC2 instance '{instance_id}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        print()
+
+# Retrieve and display tags for EC2 Customer Gateways
+response_customer_gateways = ec2_client.describe_customer_gateways()
+
+for customer_gateway in response_customer_gateways['CustomerGateways']:
+    customer_gateway_id = customer_gateway['CustomerGatewayId']
+    response_tags_customer_gateway = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [customer_gateway_id]
+            }
+        ]
+    )
+    tags_customer_gateway = response_tags_customer_gateway['Tags']
+    if tags_customer_gateway:
+        print(f"Tags for EC2 Customer Gateway '{customer_gateway_id}':")
+        for tag in tags_customer_gateway:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EC2 Customer Gateway '{customer_gateway_id}'")
+    print()
+
+# Retrieve and display tags for DHCP Options
+response_dhcp_options = ec2_client.describe_dhcp_options()
+
+for dhcp_option in response_dhcp_options['DhcpOptions']:
+    dhcp_options_id = dhcp_option['DhcpOptionsId']
+    response_tags_dhcp_options = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [dhcp_options_id]
+            }
+        ]
+    )
+    tags_dhcp_options = response_tags_dhcp_options['Tags']
+    if tags_dhcp_options:
+        print(f"Tags for DHCP Options '{dhcp_options_id}':")
+        for tag in tags_dhcp_options:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DHCP Options '{dhcp_options_id}'")
+    print()
+
+# Retrieve and display tags for Elastic IPs
+response_eips = ec2_client.describe_addresses()
+
+for eip in response_eips['Addresses']:
+    eip_allocation_id = eip['AllocationId']
+    response_tags_eip = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [eip_allocation_id]
+            }
+        ]
+    )
+    tags_eip = response_tags_eip['Tags']
+    if tags_eip:
+        print(f"Tags for Elastic IP '{eip_allocation_id}':")
+        for tag in tags_eip:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Elastic IP '{eip_allocation_id}'")
+    print()
+
+# Retrieve and display tags for EC2 Images
+response_images = ec2_client.describe_images(Owners=['self'])
+
+for image in response_images['Images']:
+    image_id = image['ImageId']
+    response_tags_image = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [image_id]
+            }
+        ]
+    )
+    tags_image = response_tags_image['Tags']
+    if tags_image:
+        print(f"Tags for EC2 Image '{image_id}':")
+        for tag in tags_image:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EC2 Image '{image_id}'")
+    print()
+
+# Retrieve and display tags for EC2 Internet Gateways
+response_internet_gateways = ec2_client.describe_internet_gateways()
+
+for internet_gateway in response_internet_gateways['InternetGateways']:
+    internet_gateway_id = internet_gateway['InternetGatewayId']
+    response_tags_internet_gateway = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [internet_gateway_id]
+            }
+        ]
+    )
+    tags_internet_gateway = response_tags_internet_gateway['Tags']
+    if tags_internet_gateway:
+        print(f"Tags for EC2 Internet Gateway '{internet_gateway_id}':")
+        for tag in tags_internet_gateway:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EC2 Internet Gateway '{internet_gateway_id}'")
+    print()
+
+# Retrieve and display tags for NAT Gateways
+response_nat_gateways = ec2_client.describe_nat_gateways()
+
+for nat_gateway in response_nat_gateways['NatGateways']:
+    nat_gateway_id = nat_gateway['NatGatewayId']
+    response_tags_nat_gateway = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [nat_gateway_id]
+            }
+        ]
+    )
+    tags_nat_gateway = response_tags_nat_gateway['Tags']
+    if tags_nat_gateway:
+        print(f"Tags for NAT Gateway '{nat_gateway_id}':")
+        for tag in tags_nat_gateway:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for NAT Gateway '{nat_gateway_id}'")
+    print()
+
+# Retrieve and display tags for Network ACLs
+response_network_acls = ec2_client.describe_network_acls()
+
+for network_acl in response_network_acls['NetworkAcls']:
+    network_acl_id = network_acl['NetworkAclId']
+    response_tags_network_acl = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [network_acl_id]
+            }
+        ]
+    )
+    tags_network_acl = response_tags_network_acl['Tags']
+    if tags_network_acl:
+        print(f"Tags for Network ACL '{network_acl_id}':")
+        for tag in tags_network_acl:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Network ACL '{network_acl_id}'")
+    print()
+
+# Retrieve and display tags for Network Interfaces
+response_network_interfaces = ec2_client.describe_network_interfaces()
+
+for network_interface in response_network_interfaces['NetworkInterfaces']:
+    network_interface_id = network_interface['NetworkInterfaceId']
+    response_tags_network_interface = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [network_interface_id]
+            }
+        ]
+    )
+    tags_network_interface = response_tags_network_interface['Tags']
+    if tags_network_interface:
+        print(f"Tags for Network Interface '{network_interface_id}':")
+        for tag in tags_network_interface:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Network Interface '{network_interface_id}'")
+    print()
+
+# Retrieve and display tags for EC2 Reserved Instances
+response_reserved_instances = ec2_client.describe_reserved_instances()
+
+for reserved_instance in response_reserved_instances['ReservedInstances']:
+    reserved_instance_id = reserved_instance['ReservedInstancesId']
+    response_tags_reserved_instance = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [reserved_instance_id]
+            }
+        ]
+    )
+    tags_reserved_instance = response_tags_reserved_instance['Tags']
+    if tags_reserved_instance:
+        print(f"Tags for EC2 Reserved Instance '{reserved_instance_id}':")
+        for tag in tags_reserved_instance:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EC2 Reserved Instance '{reserved_instance_id}'")
+    print()
+
+# Retrieve and display tags for Route Tables
+response_route_tables = ec2_client.describe_route_tables()
+
+for route_table in response_route_tables['RouteTables']:
+    route_table_id = route_table['RouteTableId']
+    response_tags_route_table = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [route_table_id]
+            }
+        ]
+    )
+    tags_route_table = response_tags_route_table['Tags']
+    if tags_route_table:
+        print(f"Tags for Route Table '{route_table_id}':")
+        for tag in tags_route_table:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Route Table '{route_table_id}'")
+    print()
+
+# Retrieve and display tags for Security Groups
+response_security_groups = ec2_client.describe_security_groups()
+
+for security_group in response_security_groups['SecurityGroups']:
+    security_group_id = security_group['GroupId']
+    response_tags_security_group = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [security_group_id]
+            }
+        ]
+    )
+    tags_security_group = response_tags_security_group['Tags']
+    if tags_security_group:
+        print(f"Tags for Security Group '{security_group_id}':")
+        for tag in tags_security_group:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Security Group '{security_group_id}'")
+    print()
+
+# Retrieve and display tags for Snapshots
+response_snapshots = ec2_client.describe_snapshots(OwnerIds=['self'])
+
+for snapshot in response_snapshots['Snapshots']:
+    snapshot_id = snapshot['SnapshotId']
+    response_tags_snapshot = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [snapshot_id]
+            }
+        ]
+    )
+    tags_snapshot = response_tags_snapshot['Tags']
+    if tags_snapshot:
+        print(f"Tags for Snapshot '{snapshot_id}':")
+        for tag in tags_snapshot:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Snapshot '{snapshot_id}'")
+    print()
+# Retrieve and display tags for EC2 Spot Instance Requests
+response_spot_instance_requests = ec2_client.describe_spot_instance_requests()
+
+for spot_instance_request in response_spot_instance_requests['SpotInstanceRequests']:
+    spot_instance_request_id = spot_instance_request['SpotInstanceRequestId']
+    response_tags_spot_instance_request = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [spot_instance_request_id]
+            }
+        ]
+    )
+    tags_spot_instance_request = response_tags_spot_instance_request['Tags']
+    if tags_spot_instance_request:
+        print(f"Tags for EC2 Spot Instance Request '{spot_instance_request_id}':")
+        for tag in tags_spot_instance_request:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EC2 Spot Instance Request '{spot_instance_request_id}'")
+    print()
+
+# Retrieve and display tags for Subnets
+response_subnets = ec2_client.describe_subnets()
+
+for subnet in response_subnets['Subnets']:
+    subnet_id = subnet['SubnetId']
+    response_tags_subnet = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [subnet_id]
+            }
+        ]
+    )
+    tags_subnet = response_tags_subnet['Tags']
+    if tags_subnet:
+        print(f"Tags for Subnet '{subnet_id}':")
+        for tag in tags_subnet:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Subnet '{subnet_id}'")
+    print()
+
+# Retrieve and display tags for VPCs
+response_vpcs = ec2_client.describe_vpcs()
+
+for vpc in response_vpcs['Vpcs']:
+    vpc_id = vpc['VpcId']
+    response_tags_vpc = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [vpc_id]
+            }
+        ]
+    )
+    tags_vpc = response_tags_vpc['Tags']
+    if tags_vpc:
+        print(f"Tags for VPC '{vpc_id}':")
+        for tag in tags_vpc:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for VPC '{vpc_id}'")
+    print()
+
+# Retrieve and display tags for VPN Connections
+response_vpn_connections = ec2_client.describe_vpn_connections()
+
+for vpn_connection in response_vpn_connections['VpnConnections']:
+    vpn_connection_id = vpn_connection['VpnConnectionId']
+    response_tags_vpn_connection = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [vpn_connection_id]
+            }
+        ]
+    )
+    tags_vpn_connection = response_tags_vpn_connection['Tags']
+    if tags_vpn_connection:
+        print(f"Tags for VPN Connection '{vpn_connection_id}':")
+        for tag in tags_vpn_connection:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for VPN Connection '{vpn_connection_id}'")
+    print()
+
+# Retrieve and display tags for VPN Gateways
+response_vpn_gateways = ec2_client.describe_vpn_gateways()
+
+for vpn_gateway in response_vpn_gateways['VpnGateways']:
+    vpn_gateway_id = vpn_gateway['VpnGatewayId']
+    response_tags_vpn_gateway = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [vpn_gateway_id]
+            }
+        ]
+    )
+    tags_vpn_gateway = response_tags_vpn_gateway['Tags']
+    if tags_vpn_gateway:
+        print(f"Tags for VPN Gateway '{vpn_gateway_id}':")
+        for tag in tags_vpn_gateway:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for VPN Gateway '{vpn_gateway_id}'")
+    print()
+
+
+# Retrieve and display tags for EC2 volumes
+response_volumes = ec2_client.describe_volumes()
+
+for volume in response_volumes['Volumes']:
+    volume_id = volume['VolumeId']
+    response_tags_volume = ec2_client.describe_tags(
+        Filters=[
+            {
+                'Name': 'resource-id',
+                'Values': [volume_id]
+            }
+        ]
+    )
+    tags_volume = response_tags_volume['Tags']
+    if tags_volume:
+        print(f"Tags for EC2 Volume '{volume_id}':")
+        for tag in tags_volume:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EC2 Volume '{volume_id}'")
+    print()
+
+
+# Retrieve information about S3 buckets
+response = s3_client.list_buckets()
+for bucket in response['Buckets']:
+    bucket_name = bucket['Name']
+    try:
+        tags = s3_client.get_bucket_tagging(Bucket=bucket_name).get('TagSet')
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchTagSet':
+            print(f"No tags for S3 bucket '{bucket_name}'")
+            print()
+        else:
+            print(f"Error retrieving tags for S3 bucket '{bucket_name}': {e}")
+    else:
+        print(f"Tags for S3 bucket '{bucket_name}':")
+        for tag in tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        print()
+
+# Retrieve information about Lambda functions
+response = lambda_client.list_functions()
+
+for function in response['Functions']:
+    function_name = function['FunctionName']
+    
+    # Retrieve custom tags for the Lambda function
+    try:
+        response_tags = lambda_client.list_tags(Resource=function['FunctionArn'])
+    except lambda_client.exceptions.ClientError as e:
+        print(f"Error retrieving tags for Lambda function '{function_name}': {e}")
+        print()
+    else:
+        tags = response_tags.get('Tags')
+        if tags:
+            print(f"Tags for Lambda function '{function_name}':")
+            for key, value in tags.items():
+                print(f"Key: {key}, Value: {value}")
+        else:
+            print(f"No tags found for Lambda function '{function_name}'")
+        print()
+
+
+
+# Create the DynamoDB client
+dynamodb_client = boto3.client('dynamodb')
+
+# Get the AWS account ID dynamically
+sts_client = boto3.client('sts')
+account_id = sts_client.get_caller_identity().get('Account')
+
+# Retrieve information about DynamoDB tables
+response = dynamodb_client.list_tables()
+tables = response.get('TableNames', [])
+
+for table_name in tables:
+    try:
+        table_arn = f"arn:aws:dynamodb:us-east-1:{account_id}:table/{table_name}"
+        tags = dynamodb_client.list_tags_of_resource(ResourceArn=table_arn).get('Tags')
+    except ClientError as e:
+        print(f"Error retrieving tags for DynamoDB table '{table_name}': {e}")
+    else:
+        if tags is None:
+            print(f"No tags for DynamoDB table '{table_name}'")
+        else:
+            print(f"Tags for DynamoDB table '{table_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+            print()
+
+
+# Retrieve information about SNS topics
+response = sns_client.list_topics()
+for topic in response['Topics']:
+    topic_arn = topic['TopicArn']
+    try:
+        tags = sns_client.list_tags_for_resource(ResourceArn=topic_arn).get('Tags')
+    except ClientError as e:
+        print(f"Error retrieving tags for SNS topic '{topic_arn}': {e}")
+    else:
+        if tags is None:
+            print(f"No tags for SNS topic '{topic_arn}'")
+        else:
+            print(f"Tags for SNS topic '{topic_arn}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+            print()
+
+# Retrieve information about SQS queues
+response = sqs_client.list_queues()
+queues = response.get('Queues', [])
+
+for queue in queues:
+    queue_url = queue['QueueUrl']
+    try:
+        attributes = sqs_client.get_queue_attributes(QueueUrl=queue_url, AttributeNames=['All']).get('Attributes')
+        tags = attributes.get('Tags')
+    except ClientError as e:
+        print(f"Error retrieving tags for SQS queue '{queue_url}': {e}")
+    else:
+        if tags is None:
+            print(f"No tags for SQS queue '{queue_url}'")
+        else:
+            print(f"Tags for SQS queue '{queue_url}':")
+            for key, value in tags.items():
+                print(f"Key: {key}, Value: {value}")
+            print()
+
+
+# Retrieve information about CloudFormation stacks
+response = cloudformation_client.describe_stacks()
+stacks = response.get('Stacks', [])
+
+for stack in stacks:
+    stack_name = stack['StackName']
+    tags = stack.get('Tags')
+
+    if not tags:  # Check if tags list is empty
+        print(f"No tags for CloudFormation stack '{stack_name}'")
+        print()
+    else:
+        print(f"Tags for CloudFormation stack '{stack_name}':")
+        for tag in tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        print()
+
+# Retrieve and print tags for Amazon MQ brokers
+response = mq_client.list_brokers()
+for broker in response['BrokerSummaries']:
+    broker_id = broker['BrokerId']
+    tags = mq_client.list_tags(ResourceArn=broker['BrokerArn'])['Tags']
+
+    if not tags:
+        print(f"No tags for Amazon MQ broker '{broker_id}'")
+        print()
+    else:
+        print(f"Tags for Amazon MQ broker '{broker_id}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    print()
+
+# Retrieve and print tags for Amazon MQ configurations
+response = mq_client.list_configurations()
+for configuration in response['Configurations']:
+    configuration_id = configuration['Id']
+    tags = mq_client.list_tags(ResourceArn=configuration['Arn'])['Tags']
+
+    if not tags:
+        print(f"No tags for Amazon MQ configuration '{configuration_id}'")
+        print()
+    else:
+        print(f"Tags for Amazon MQ configuration '{configuration_id}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    print()
+
+# Retrieve and print tags for AppStream fleets
+response = appstream_client.describe_fleets()
+for fleet in response['Fleets']:
+    fleet_name = fleet['Name']
+    tags = appstream_client.list_tags_for_resource(ResourceArn=fleet['Arn'])['Tags']
+
+    if not tags:
+        print(f"No tags for AppStream fleet '{fleet_name}'")
+        print()
+    else:
+        print(f"Tags for AppStream fleet '{fleet_name}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    print()
+
+# Retrieve and print tags for AppStream image builders
+response = appstream_client.describe_image_builders()
+for image_builder in response['ImageBuilders']:
+    image_builder_name = image_builder['Name']
+    tags = appstream_client.list_tags_for_resource(ResourceArn=image_builder['Arn'])['Tags']
+
+    if not tags:
+        print(f"No tags for AppStream image builder '{image_builder_name}'")
+        print()
+    else:
+        print(f"Tags for AppStream image builder '{image_builder_name}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    print()
+
+# Retrieve and print tags for AppStream stacks
+response = appstream_client.describe_stacks()
+for stack in response['Stacks']:
+    stack_name = stack['Name']
+    tags = appstream_client.list_tags_for_resource(ResourceArn=stack['Arn'])['Tags']
+
+    if not tags:
+        print(f"No tags for AppStream stack '{stack_name}'")
+        print()
+    else:
+        print(f"Tags for AppStream stack '{stack_name}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    print()
+
+# Retrieve and print tags for ACM certificates
+response = acm_client.list_certificates()
+for certificate in response['CertificateSummaryList']:
+    certificate_arn = certificate['CertificateArn']
+    tags = acm_client.list_tags_for_certificate(CertificateArn=certificate_arn)['Tags']
+
+    if not tags:
+        print(f"No tags for ACM certificate '{certificate_arn}'")
+        print()
+    else:
+        print(f"Tags for ACM certificate '{certificate_arn}':")
+        for tag in tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    print()
+
+
+
+# Retrieve information about CloudTrail trails in us-east-1 region
+response = cloudtrail_client.describe_trails()
+
+for trail in response['trailList']:
+    trail_name = trail['Name']
+    trail_arn = trail['TrailARN']
+
+    try:
+        response_tags = cloudtrail_client.list_tags(ResourceIdList=[trail_arn])
+    except cloudtrail_client.exceptions.ClientError as e:
+        print(f"Error retrieving tags for CloudTrail trail '{trail_name}': {e}")
+        print()
+    else:
+        print(f"Tags for CloudTrail trail '{trail_name}':")
+        tags_list = response_tags.get('ResourceTagList')
+        if tags_list:
+            for tags in tags_list:
+                for tag in tags['TagsList']:
+                    print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print("No tags found.")
+        print()
+
+# Retrieve information about CloudWatch alarms in us-east-1 region
+response = cloudwatch_client.describe_alarms()
+
+for alarm in response['MetricAlarms']:
+    alarm_name = alarm['AlarmName']
+    alarm_arn = alarm['AlarmArn']
+
+    try:
+        response_tags = cloudwatch_client.list_tags_for_resource(ResourceARN=alarm_arn)
+    except cloudwatch_client.exceptions.ClientError as e:
+        print(f"Error retrieving tags for CloudWatch alarm '{alarm_name}': {e}")
+        print()
+    else:
+        print(f"Tags for CloudWatch alarm '{alarm_name}':")
+        tags = response_tags.get('Tags')
+        if tags:
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print("No tags found.")
+        print()
+
+# Retrieve information about CodeArtifact domains
+response_domains = codeartifact_client.list_domains()
+
+for domain in response_domains['domains']:
+    domain_name = domain['name']
+    
+    # Retrieve tags for the CodeArtifact domain
+    try:
+        response_tags_domain = codeartifact_client.list_tags_for_resource(
+            resourceArn=domain['arn']
+        )
+    except codeartifact_client.exceptions.ResourceNotFoundException:
+        print(f"No CodeArtifact domain found with name '{domain_name}'")
+        print()
+    except codeartifact_client.exceptions.InternalServerException as e:
+        print(f"Error retrieving tags for CodeArtifact domain '{domain_name}': {e}")
+        print()
+    else:
+        tags_domain = response_tags_domain.get('tags')
+        if tags_domain:
+            print(f"Tags for CodeArtifact domain '{domain_name}':")
+            for tag in tags_domain:
+                print(f"Key: {tag['key']}, Value: {tag['value']}")
+        else:
+            print(f"No tags found for CodeArtifact domain '{domain_name}'")
+        print()
+
+# Retrieve information about CodeArtifact repositories
+response_repositories = codeartifact_client.list_repositories()
+
+for repository in response_repositories['repositories']:
+    repository_name = repository['name']
+    
+    # Retrieve tags for the CodeArtifact repository
+    try:
+        response_tags_repository = codeartifact_client.list_tags_for_resource(
+            resourceArn=repository['arn']
+        )
+    except codeartifact_client.exceptions.ResourceNotFoundException:
+        print(f"No CodeArtifact repository found with name '{repository_name}'")
+        print()
+    except codeartifact_client.exceptions.InternalServerException as e:
+        print(f"Error retrieving tags for CodeArtifact repository '{repository_name}': {e}")
+        print()
+    else:
+        tags_repository = response_tags_repository.get('tags')
+        if tags_repository:
+            print(f"Tags for CodeArtifact repository '{repository_name}':")
+            for tag in tags_repository:
+                print(f"Key: {tag['key']}, Value: {tag['value']}")
+        else:
+            print(f"No tags found for CodeArtifact repository '{repository_name}'")
+        print()
+
+# Retrieve information about CodeCommit repositories
+response_repositories = codecommit_client.list_repositories()
+
+for repository in response_repositories['repositories']:
+    repository_name = repository['repositoryName']
+
+    # Retrieve tags for the CodeCommit repository
+    try:
+        repository_metadata = codecommit_client.get_repository(repositoryName=repository_name)
+        repository_arn = repository_metadata['repositoryMetadata']['Arn']
+
+        response_tags_repository = codecommit_client.list_tags_for_resource(
+            resourceArn=repository_arn
+        )
+    except codecommit_client.exceptions.RepositoryDoesNotExistException:
+        print(f"No CodeCommit repository found with name '{repository_name}'")
+        print()
+    except codecommit_client.exceptions.InvalidResourceArnException as e:
+        print(f"Error retrieving tags for CodeCommit repository '{repository_name}': {e}")
+        print()
+    else:
+        tags_repository = response_tags_repository.get('tags')
+        if tags_repository:
+            print(f"Tags for CodeCommit repository '{repository_name}':")
+            for tag_key, tag_value in tags_repository.items():
+                print(f"Key: {tag_key}, Value: {tag_value}")
+        else:
+            print(f"No tags found for CodeCommit repository '{repository_name}'")
+        print()
+
+# Retrieve information about CodeGuru Reviewer repository associations
+response_associations = codeguru_client.list_repository_associations()
+
+for association in response_associations['RepositoryAssociationSummaries']:
+    association_name = association['Name']
+    association_arn = association['AssociationArn']
+
+    # Retrieve tags for the CodeGuru Reviewer repository association
+    try:
+        response_tags_association = codeguru_client.list_tags_for_resource(
+            resourceArn=association_arn
+        )
+    except codeguru_client.exceptions.ResourceNotFoundException:
+        print(f"No CodeGuru Reviewer repository association found with name '{association_name}'")
+        print()
+    except codeguru_client.exceptions.InternalServerException as e:
+        print(f"Error retrieving tags for CodeGuru Reviewer repository association '{association_name}': {e}")
+        print()
+    else:
+        tags_association = response_tags_association.get('Tags')
+        if tags_association:
+            print(f"Tags for CodeGuru Reviewer repository association '{association_name}':")
+            for tag in tags_association:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for CodeGuru Reviewer repository association '{association_name}'")
+        print()
+
+
+# Retrieve information about Cognito Identity Pools
+response_identity_pools = cognito_identity_client.list_identity_pools(MaxResults=60)
+
+for identity_pool in response_identity_pools['IdentityPools']:
+    identity_pool_name = identity_pool['IdentityPoolName']
+    identity_pool_id = identity_pool['IdentityPoolId']
+
+    # Retrieve tags for the Cognito Identity Pool
+    try:
+        response_tags_identity_pool = cognito_identity_client.list_tags_for_resource(
+            ResourceArn=identity_pool['Arn']
+        )
+    except cognito_identity_client.exceptions.ResourceNotFoundException:
+        print(f"No Cognito Identity Pool found with name '{identity_pool_name}'")
+        print()
+    except cognito_identity_client.exceptions.InternalErrorException as e:
+        print(f"Error retrieving tags for Cognito Identity Pool '{identity_pool_name}': {e}")
+        print()
+    else:
+        tags_identity_pool = response_tags_identity_pool.get('Tags')
+        if tags_identity_pool:
+            print(f"Tags for Cognito Identity Pool '{identity_pool_name}':")
+            for tag in tags_identity_pool:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Cognito Identity Pool '{identity_pool_name}'")
+        print()
+
+# Retrieve information about Cognito User Pools
+response_user_pools = cognito_idp_client.list_user_pools(MaxResults=60)
+
+for user_pool in response_user_pools['UserPools']:
+    user_pool_name = user_pool['Name']
+    user_pool_id = user_pool['Id']
+
+    # Retrieve tags for the Cognito User Pool
+    try:
+        response_tags_user_pool = cognito_idp_client.list_tags_for_resource(
+            ResourceArn=user_pool['Arn']
+        )
+    except cognito_idp_client.exceptions.ResourceNotFoundException:
+        print(f"No Cognito User Pool found with name '{user_pool_name}'")
+        print()
+    except cognito_idp_client.exceptions.InternalErrorException as e:
+        print(f"Error retrieving tags for Cognito User Pool '{user_pool_name}': {e}")
+        print()
+    else:
+        tags_user_pool = response_tags_user_pool.get('Tags')
+        if tags_user_pool:
+            print(f"Tags for Cognito User Pool '{user_pool_name}':")
+            for tag in tags_user_pool:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Cognito User Pool '{user_pool_name}'")
+        print()
+
+# Retrieve information about AWS Config Config Rules
+response_rules = config_client.describe_config_rules()
+
+for rule in response_rules['ConfigRules']:
+    rule_name = rule['ConfigRuleName']
+    rule_id = rule['ConfigRuleId']
+
+    # Retrieve tags for the AWS Config Config Rule
+    try:
+        response_tags_rule = config_client.list_tags_for_resource(
+            ResourceArn=rule['ConfigRuleArn']
+        )
+    except config_client.exceptions.NoSuchConfigRuleException:
+        print(f"No AWS Config Config Rule found with name '{rule_name}'")
+        print()
+    except config_client.exceptions.InvalidParameterValueException as e:
+        print(f"Error retrieving tags for AWS Config Config Rule '{rule_name}': {e}")
+        print()
+    else:
+        tags_rule = response_tags_rule.get('Tags')
+        if tags_rule:
+            print(f"Tags for AWS Config Config Rule '{rule_name}':")
+            for tag in tags_rule:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for AWS Config Config Rule '{rule_name}'")
+        print()
+
+# Retrieve information about AWS DMS certificates
+response_certificates = dms_client.describe_certificates()
+
+for certificate in response_certificates['Certificates']:
+    certificate_arn = certificate['CertificateArn']
+
+    # Retrieve tags for the AWS DMS certificate
+    try:
+        response_tags_certificate = dms_client.list_tags_for_resource(
+            ResourceArn=certificate_arn
+        )
+    except dms_client.exceptions.ResourceNotFoundFault:
+        print(f"No AWS DMS certificate found with ARN '{certificate_arn}'")
+        print()
+    except dms_client.exceptions.InvalidResourceStateFault as e:
+        print(f"Error retrieving tags for AWS DMS certificate '{certificate_arn}': {e}")
+        print()
+    else:
+        tags_certificate = response_tags_certificate.get('TagList')
+        if tags_certificate:
+            print(f"Tags for AWS DMS certificate '{certificate_arn}':")
+            for tag in tags_certificate:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for AWS DMS certificate '{certificate_arn}'")
+        print()
+
+# Retrieve information about AWS DMS endpoints
+response_endpoints = dms_client.describe_endpoints()
+
+for endpoint in response_endpoints['Endpoints']:
+    endpoint_arn = endpoint['EndpointArn']
+
+    # Retrieve tags for the AWS DMS endpoint
+    try:
+        response_tags_endpoint = dms_client.list_tags_for_resource(
+            ResourceArn=endpoint_arn
+        )
+    except dms_client.exceptions.ResourceNotFoundFault:
+        print(f"No AWS DMS endpoint found with ARN '{endpoint_arn}'")
+        print()
+    except dms_client.exceptions.InvalidResourceStateFault as e:
+        print(f"Error retrieving tags for AWS DMS endpoint '{endpoint_arn}': {e}")
+        print()
+    else:
+        tags_endpoint = response_tags_endpoint.get('TagList')
+        if tags_endpoint:
+            print(f"Tags for AWS DMS endpoint '{endpoint_arn}':")
+            for tag in tags_endpoint:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for AWS DMS endpoint '{endpoint_arn}'")
+        print()
+
+# Retrieve information about AWS DMS event subscriptions
+response_event_subscriptions = dms_client.describe_event_subscriptions()
+
+for event_subscription in response_event_subscriptions['EventSubscriptionsList']:
+    event_subscription_arn = event_subscription['EventSubscriptionArn']
+
+    # Retrieve tags for the AWS DMS event subscription
+    try:
+        response_tags_event_subscription = dms_client.list_tags_for_resource(
+            ResourceArn=event_subscription_arn
+        )
+    except dms_client.exceptions.ResourceNotFoundFault:
+        print(f"No AWS DMS event subscription found with ARN '{event_subscription_arn}'")
+        print()
+    except dms_client.exceptions.InvalidResourceStateFault as e:
+        print(f"Error retrieving tags for AWS DMS event subscription '{event_subscription_arn}': {e}")
+        print()
+    else:
+        tags_event_subscription = response_tags_event_subscription.get('TagList')
+        if tags_event_subscription:
+            print(f"Tags for AWS DMS event subscription '{event_subscription_arn}':")
+            for tag in tags_event_subscription:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for AWS DMS event subscription '{event_subscription_arn}'")
+        print()
+
+# Retrieve information about AWS DMS replication instances
+response_replication_instances = dms_client.describe_replication_instances()
+
+for replication_instance in response_replication_instances['ReplicationInstances']:
+    replication_instance_arn = replication_instance['ReplicationInstanceArn']
+
+    # Retrieve tags for the AWS DMS replication instance
+    try:
+        response_tags_replication_instance = dms_client.list_tags_for_resource(
+            ResourceArn=replication_instance_arn
+        )
+    except dms_client.exceptions.ResourceNotFoundFault:
+        print(f"No AWS DMS replication instance found with ARN '{replication_instance_arn}'")
+        print()
+    except dms_client.exceptions.InvalidResourceStateFault as e:
+        print(f"Error retrieving tags for AWS DMS replication instance '{replication_instance_arn}': {e}")
+        print()
+    else:
+        tags_replication_instance = response_tags_replication_instance.get('TagList')
+        if tags_replication_instance:
+            print(f"Tags for AWS DMS replication instance '{replication_instance_arn}':")
+            for tag in tags_replication_instance:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for AWS DMS replication instance '{replication_instance_arn}'")
+        print()
+
+# Retrieve information about AWS DMS replication tasks
+response_replication_tasks = dms_client.describe_replication_tasks()
+
+for task in response_replication_tasks['ReplicationTasks']:
+    task_arn = task['ReplicationTaskArn']
+    task_identifier = task['ReplicationTaskIdentifier']
+
+    # Retrieve tags for the AWS DMS replication task
+    try:
+        response_tags_task = dms_client.list_tags_for_resource(
+            ResourceArn=task_arn
+        )
+    except dms_client.exceptions.ResourceNotFoundFault:
+        print(f"No AWS DMS replication task found with identifier '{task_identifier}'")
+        print()
+    except dms_client.exceptions.InvalidResourceStateFault as e:
+        print(f"Error retrieving tags for AWS DMS replication task '{task_identifier}': {e}")
+        print()
+    else:
+        tags_task = response_tags_task.get('TagList')
+        if tags_task:
+            print(f"Tags for AWS DMS replication task '{task_identifier}':")
+            for tag in tags_task:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for AWS DMS replication task '{task_identifier}'")
+        print()
+
+# Retrieve information about DataBrew datasets
+response_datasets = databrew_client.list_datasets()
+
+for dataset in response_datasets['Datasets']:
+    dataset_name = dataset['Name']
+    dataset_arn = dataset['ResourceArn']
+
+    # Retrieve tags for the DataBrew dataset
+    response_tags_dataset = databrew_client.list_tags_for_resource(
+        ResourceArn=dataset_arn
+    )
+    tags_dataset = response_tags_dataset.get('Tags')
+    if tags_dataset:
+        print(f"Tags for DataBrew dataset '{dataset_name}':")
+        for tag in tags_dataset:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DataBrew dataset '{dataset_name}'")
+    print()
+
+# Retrieve information about DataBrew jobs
+response_jobs = databrew_client.list_jobs()
+
+for job in response_jobs['Jobs']:
+    job_name = job['Name']
+    job_arn = job['Arn']
+
+    # Retrieve tags for the DataBrew job
+    response_tags_job = databrew_client.list_tags_for_resource(
+        ResourceArn=job_arn
+    )
+    tags_job = response_tags_job.get('Tags')
+    if tags_job:
+        print(f"Tags for DataBrew job '{job_name}':")
+        for tag in tags_job:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DataBrew job '{job_name}'")
+    print()
+
+# Retrieve information about DataBrew projects
+response_projects = databrew_client.list_projects()
+
+for project in response_projects['Projects']:
+    project_name = project['Name']
+    project_arn = project['Arn']
+
+    # Retrieve tags for the DataBrew project
+    response_tags_project = databrew_client.list_tags_for_resource(
+        ResourceArn=project_arn
+    )
+    tags_project = response_tags_project.get('Tags')
+    if tags_project:
+        print(f"Tags for DataBrew project '{project_name}':")
+        for tag in tags_project:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DataBrew project '{project_name}'")
+    print()
+
+# Retrieve information about DataBrew recipes
+response_recipes = databrew_client.list_recipes()
+
+for recipe in response_recipes['Recipes']:
+    recipe_name = recipe['Name']
+    recipe_arn = recipe['Arn']
+
+    # Retrieve tags for the DataBrew recipe
+    response_tags_recipe = databrew_client.list_tags_for_resource(
+        ResourceArn=recipe_arn
+    )
+    tags_recipe = response_tags_recipe.get('Tags')
+    if tags_recipe:
+        print(f"Tags for DataBrew recipe '{recipe_name}':")
+        for tag in tags_recipe:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DataBrew recipe '{recipe_name}'")
+    print()
+
+# Retrieve information about DataBrew schedules
+response_schedules = databrew_client.list_schedules()
+
+for schedule in response_schedules['Schedules']:
+    schedule_name = schedule['Name']
+    schedule_arn = schedule['Arn']
+
+    # Retrieve tags for the DataBrew schedule
+    response_tags_schedule = databrew_client.list_tags_for_resource(
+        ResourceArn=schedule_arn
+    )
+    tags_schedule = response_tags_schedule.get('Tags')
+    if tags_schedule:
+        print(f"Tags for DataBrew schedule '{schedule_name}':")
+        for tag in tags_schedule:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DataBrew schedule '{schedule_name}'")
+    print()
+
+# Retrieve information about DataExchange datasets
+response_datasets = data_exchange_client.list_data_sets()
+
+for dataset in response_datasets['DataSets']:
+    dataset_id = dataset['Id']
+    dataset_arn = dataset['Arn']
+
+    # Retrieve tags for the DataExchange dataset
+    response_tags_dataset = data_exchange_client.list_tags_for_resource(
+        ResourceArn=dataset_arn
+    )
+    tags_dataset = response_tags_dataset.get('Tags')
+    if tags_dataset:
+        print(f"Tags for DataExchange dataset '{dataset_id}':")
+        for key, value in tags_dataset.items():
+            print(f"Key: {key}, Value: {value}")
+    else:
+        print(f"No tags found for DataExchange dataset '{dataset_id}'")
+    print()
+
+
+# Retrieve information about Data Pipeline pipelines
+response_pipelines = data_pipeline_client.list_pipelines()
+
+for pipeline in response_pipelines['pipelineIdList']:
+    pipeline_id = pipeline['id']
+    pipeline_arn = f"arn:aws:datapipeline:{region}:{account_id}:pipeline/{pipeline_id}"
+
+    # Retrieve tags for the Data Pipeline pipeline
+    response_tags_pipeline = data_pipeline_client.list_tags(
+        pipelineId=pipeline_id
+    )
+    tags_pipeline = response_tags_pipeline.get('tags')
+    if tags_pipeline:
+        print(f"Tags for Data Pipeline pipeline '{pipeline_id}':")
+        for tag_key, tag_value in tags_pipeline.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for Data Pipeline pipeline '{pipeline_id}'")
+    print()
+
+# Retrieve a list of all DynamoDB tables
+response_tables = dynamodb_client.list_tables()
+
+# Iterate over the tables and retrieve tags for each table
+for table_name in response_tables['TableNames']:
+    response_tags_table = dynamodb_client.list_tags_of_resource(
+        ResourceArn=f"arn:aws:dynamodb:{region}:{account_id}:table/{table_name}"
+    )
+    tags_table = response_tags_table.get('Tags')
+    if tags_table:
+        print(f"Tags for DynamoDB table '{table_name}':")
+        for tag in tags_table:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for DynamoDB table '{table_name}'")
+    print()
+
+# Retrieve and display tags for ECS clusters
+response_clusters = ecs_client.list_clusters()
+
+for cluster_arn in response_clusters['clusterArns']:
+    response_tags_cluster = ecs_client.list_tags_for_resource(
+        resourceArn=cluster_arn
+    )
+    tags_cluster = response_tags_cluster['tags']
+    if tags_cluster:
+        print(f"Tags for ECS Cluster '{cluster_arn}':")
+        for key, value in tags_cluster.items():
+            print(f"Key: {key}, Value: {value}")
+    else:
+        print(f"No tags found for ECS Cluster '{cluster_arn}'")
+    print()
+
+# Retrieve and display tags for ECS task definitions
+response_task_definitions = ecs_client.list_task_definitions()
+
+for task_definition_arn in response_task_definitions['taskDefinitionArns']:
+    response_tags_task_definition = ecs_client.list_tags_for_resource(
+        resourceArn=task_definition_arn
+    )
+    tags_task_definition = response_tags_task_definition['tags']
+    if tags_task_definition:
+        print(f"Tags for ECS Task Definition '{task_definition_arn}':")
+        for key, value in tags_task_definition.items():
+            print(f"Key: {key}, Value: {value}")
+    else:
+        print(f"No tags found for ECS Task Definition '{task_definition_arn}'")
+    print()
+
+# Retrieve and display tags for EFS file systems
+response_file_systems = efs_client.describe_file_systems()
+
+for file_system in response_file_systems['FileSystems']:
+    file_system_id = file_system['FileSystemId']
+    
+    # Retrieve tags for the EFS file system
+    response_tags = efs_client.describe_tags(
+        FileSystemId=file_system_id
+    )
+    tags = response_tags['Tags']
+    if tags:
+        print(f"Tags for EFS File System '{file_system_id}':")
+        for tag in tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EFS File System '{file_system_id}'")
+    print()
+
+# Retrieve and display tags for the EKS cluster
+response_clusters = eks_client.list_clusters()
+
+for cluster_name in response_clusters['clusters']:
+    # Retrieve tags for the EKS cluster
+    response_tags = eks_client.list_tags_for_resource(
+        resourceArn=f"arn:aws:eks:<region>:<account-id>:cluster/{cluster_name}"
+    )
+    tags = response_tags['tags']
+    if tags:
+        print(f"Tags for EKS Cluster '{cluster_name}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for EKS Cluster '{cluster_name}'")
+    print()
+
+# Retrieve and display tags for the EMR cluster
+response_clusters = emr_client.list_clusters()
+
+for cluster in response_clusters['Clusters']:
+    cluster_id = cluster['Id']
+
+    # Retrieve tags for the EMR cluster
+    response_tags = emr_client.describe_cluster(
+        ClusterId=cluster_id
+    )['Cluster']['Tags']
+
+    if response_tags:
+        print(f"Tags for EMR Cluster '{cluster_id}':")
+        for tag in response_tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EMR Cluster '{cluster_id}'")
+    print()
+
+# Retrieve and display tags for the EMR Containers virtual cluster
+response_virtual_clusters = emr_containers_client.list_virtual_clusters()
+
+for virtual_cluster in response_virtual_clusters['virtualClusters']:
+    virtual_cluster_id = virtual_cluster['id']
+
+    # Retrieve tags for the EMR Containers virtual cluster
+    response_tags = emr_containers_client.describe_virtual_cluster(
+        id=virtual_cluster_id
+    )['virtualCluster']['tags']
+
+    if response_tags:
+        print(f"Tags for EMR Containers Virtual Cluster '{virtual_cluster_id}':")
+        for tag_key, tag_value in response_tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for EMR Containers Virtual Cluster '{virtual_cluster_id}'")
+    print()
+
+# Retrieve information about Elasticache cache clusters
+response_cache_clusters = elasticache_client.describe_cache_clusters()
+
+# Retrieve tags for cache clusters
+for cache_cluster in response_cache_clusters['CacheClusters']:
+    cache_cluster_id = cache_cluster['CacheClusterId']
+    cache_cluster_arn = f"arn:aws:elasticache:{region}:{account_id}:cluster:{cache_cluster_id}"
+
+    try:
+        response_tags_cluster = elasticache_client.list_tags_for_resource(
+            ResourceName=cache_cluster_arn
+        )
+        tags_cluster = response_tags_cluster['TagList']
+        if tags_cluster:
+            print(f"Tags for Elasticache cache cluster '{cache_cluster_id}':")
+            for tag in tags_cluster:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Elasticache cache cluster '{cache_cluster_id}'")
+        print()
+    except elasticache_client.exceptions.CacheClusterNotFoundFault:
+        print(f"Elasticache cache cluster '{cache_cluster_id}' not found")
+        print()
+
+# Retrieve information about Elasticache snapshots
+response_snapshots = elasticache_client.describe_snapshots()
+
+# Retrieve tags for snapshots
+for snapshot in response_snapshots['Snapshots']:
+    snapshot_name = snapshot['SnapshotName']
+    snapshot_arn = snapshot['ARN']
+
+    try:
+        response_tags_snapshot = elasticache_client.list_tags_for_resource(
+            ResourceName=snapshot_arn
+        )
+        tags_snapshot = response_tags_snapshot['TagList']
+        if tags_snapshot:
+            print(f"Tags for Elasticache snapshot '{snapshot_name}':")
+            for tag in tags_snapshot:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Elasticache snapshot '{snapshot_name}'")
+        print()
+    except elasticache_client.exceptions.SnapshotNotFoundFault:
+        print(f"Elasticache snapshot '{snapshot_name}' not found")
+        print()
+
+# Retrieve information about Elastic Beanstalk applications
+response_applications = elasticbeanstalk_client.describe_applications()
+
+# Retrieve tags for applications
+for application in response_applications['Applications']:
+    application_name = application['ApplicationName']
+    application_arn = f"arn:aws:elasticbeanstalk:{region}:{account_id}:application/{application_name}"
+
+    try:
+        response_tags_application = elasticbeanstalk_client.list_tags_for_resource(
+            ResourceArn=application_arn
+        )
+        tags_application = response_tags_application['ResourceTags']
+        if tags_application:
+            print(f"Tags for Elastic Beanstalk application '{application_name}':")
+            for tag in tags_application:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Elastic Beanstalk application '{application_name}'")
+        print()
+    except elasticbeanstalk_client.exceptions.ApplicationNotFound:
+        print(f"Elastic Beanstalk application '{application_name}' not found")
+        print()
+
+# Retrieve information about Elastic Inference accelerators
+response_accelerators = elastic_inference_client.describe_accelerators()
+
+# Retrieve tags for accelerators
+for accelerator in response_accelerators['acceleratorSet']:
+    accelerator_arn = accelerator['acceleratorArn']
+
+    try:
+        response_tags_accelerator = elastic_inference_client.list_tags_for_resource(
+            resourceArn=accelerator_arn
+        )
+        tags_accelerator = response_tags_accelerator['tags']
+        if tags_accelerator:
+            print(f"Tags for Elastic Inference accelerator '{accelerator_arn}':")
+            for tag in tags_accelerator:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Elastic Inference accelerator '{accelerator_arn}'")
+        print()
+    except elastic_inference_client.exceptions.ResourceNotFoundException:
+        print(f"Elastic Inference accelerator '{accelerator_arn}' not found")
+        print()
+
+# Retrieve information about load balancers
+response_load_balancers = elb_client.describe_load_balancers()
+
+# Retrieve tags for load balancers
+for load_balancer in response_load_balancers['LoadBalancerDescriptions']:
+    load_balancer_name = load_balancer['LoadBalancerName']
+
+    # Retrieve tags for the load balancer
+    response_tags_load_balancer = elb_client.describe_tags(
+        LoadBalancerNames=[load_balancer_name]
+    )
+    tags_description = response_tags_load_balancer['TagDescriptions'][0]
+    if 'Tags' in tags_description:
+        tags_load_balancer = tags_description['Tags']
+        print(f"Tags for ELB load balancer '{load_balancer_name}':")
+        for tag in tags_load_balancer:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for ELB load balancer '{load_balancer_name}'")
+    print()
+
+# Retrieve information about load balancers
+response_load_balancers = elbv2_client.describe_load_balancers()
+
+# Retrieve tags for load balancers
+for load_balancer in response_load_balancers['LoadBalancers']:
+    load_balancer_arn = load_balancer['LoadBalancerArn']
+
+    # Retrieve tags for the load balancer
+    response_tags_load_balancer = elbv2_client.describe_tags(
+        ResourceArns=[load_balancer_arn]
+    )
+    tags_description = response_tags_load_balancer['TagDescriptions'][0]
+    if 'Tags' in tags_description:
+        tags_load_balancer = tags_description['Tags']
+        print(f"Tags for ELB v2 load balancer '{load_balancer_arn}':")
+        for tag in tags_load_balancer:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for ELB v2 load balancer '{load_balancer_arn}'")
+    print()
+
+# Retrieve information about ELB v2 target groups
+response_target_groups = elbv2_client.describe_target_groups()
+
+for target_group in response_target_groups['TargetGroups']:
+    target_group_arn = target_group['TargetGroupArn']
+
+    # Retrieve tags for the ELB v2 target group
+    response_tags_target_group = elbv2_client.describe_tags(
+        ResourceArns=[target_group_arn]
+    )
+    tags_target_group = response_tags_target_group.get('TagDescriptions')[0]['Tags']
+    
+    if tags_target_group:
+        print(f"Tags for ELB v2 target group '{target_group_arn}':")
+        for tag in tags_target_group:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for ELB v2 target group '{target_group_arn}'")
+    print()
+
+# Retrieve information about Elasticsearch domains
+response_domains = es_client.list_domain_names()
+
+for domain in response_domains['DomainNames']:
+    domain_name = domain['DomainName']
+    domain_arn = domain['ARN']
+
+    # Retrieve tags for the Elasticsearch domain
+    response_tags_domain = es_client.list_tags(
+        ARN=domain_arn
+    )
+    tags_domain = response_tags_domain.get('TagList')
+    
+    if tags_domain:
+        print(f"Tags for Elasticsearch domain '{domain_name}':")
+        for tag in tags_domain:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Elasticsearch domain '{domain_name}'")
+    print()
+
+# Retrieve information about EventBridge rules
+response_rules = eventbridge_client.list_rules()
+
+for rule in response_rules['Rules']:
+    rule_name = rule['Name']
+    rule_arn = rule['Arn']
+
+    # Retrieve tags for the EventBridge rule
+    response_tags_rule = eventbridge_client.list_tags_for_resource(
+        ResourceARN=rule_arn
+    )
+    tags_rule = response_tags_rule.get('Tags')
+    
+    if tags_rule:
+        print(f"Tags for EventBridge rule '{rule_name}':")
+        for tag in tags_rule:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for EventBridge rule '{rule_name}'")
+    print()
+
+# Retrieve information about FSx file systems
+response_filesystems = fsx_client.describe_file_systems()
+
+for filesystem in response_filesystems['FileSystems']:
+    filesystem_id = filesystem['FileSystemId']
+    
+    # Retrieve tags for the FSx file system
+    response_tags = fsx_client.list_tags_for_resource(
+        ResourceARN=filesystem_id
+    )
+    tags = response_tags.get('Tags')
+    
+    if tags:
+        print(f"Tags for FSx file system '{filesystem_id}':")
+        for tag in tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for FSx file system '{filesystem_id}'")
+    print()
+
+# Retrieve information about Glacier vaults
+response_vaults = glacier_client.list_vaults()
+
+for vault in response_vaults['VaultList']:
+    vault_name = vault['VaultName']
+    
+    # Retrieve tags for the Glacier vault
+    response_tags = glacier_client.list_tags_for_vault(
+        vaultName=vault_name
+    )
+    
+    tags = response_tags.get('Tags')
+    
+    if tags:
+        print(f"Tags for Glacier vault '{vault_name}':")
+        for tag_key, tag_value in tags.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for Glacier vault '{vault_name}'")
+    print()
+
+# Retrieve information about Glue crawlers
+response_crawlers = glue_client.get_crawlers()
+
+for crawler in response_crawlers['Crawlers']:
+    crawler_name = crawler['Name']
+    
+    # Retrieve tags for the Glue crawler
+    response_tags_crawler = glue_client.get_tags(ResourceArn=crawler['Arn'])
+    
+    tags_crawler = response_tags_crawler.get('Tags')
+    
+    if tags_crawler:
+        print(f"Tags for Glue crawler '{crawler_name}':")
+        for tag_key, tag_value in tags_crawler.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for Glue crawler '{crawler_name}'")
+    print()
+
+# Retrieve information about Glue jobs
+response_jobs = glue_client.get_jobs()
+
+for job in response_jobs['Jobs']:
+    job_name = job['Name']
+    
+    # Retrieve tags for the Glue job
+    response_tags_job = glue_client.get_tags(JobName=job_name)
+    
+    tags_job = response_tags_job.get('Tags')
+    
+    if tags_job:
+        print(f"Tags for Glue job '{job_name}':")
+        for tag_key, tag_value in tags_job.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for Glue job '{job_name}'")
+    print()
+
+# Retrieve information about Glue triggers
+response_triggers = glue_client.get_triggers()
+
+for trigger in response_triggers['Triggers']:
+    trigger_name = trigger['Name']
+    
+    # Retrieve tags for the Glue trigger
+    response_tags_trigger = glue_client.get_tags(ResourceArn=trigger['Arn'])
+    
+    tags_trigger = response_tags_trigger.get('Tags')
+    
+    if tags_trigger:
+        print(f"Tags for Glue trigger '{trigger_name}':")
+        for tag_key, tag_value in tags_trigger.items():
+            print(f"Key: {tag_key}, Value: {tag_value}")
+    else:
+        print(f"No tags found for Glue trigger '{trigger_name}'")
+    print()
+
+# List IoT Analytics datasets
+response_datasets = iot_analytics_client.list_datasets()
+
+# Iterate over the datasets and retrieve tags for each dataset
+for dataset in response_datasets['datasetSummaries']:
+    dataset_name = dataset['datasetName']
+    response_tags = iot_analytics_client.list_tags_for_resource(resourceArn=dataset['datasetArn'])
+
+    print(f"Tags for IoT Analytics dataset '{dataset_name}':")
+    if 'tags' in response_tags and response_tags['tags']:
+        for key, value in response_tags['tags'].items():
+            print(f"Key: {key}, Value: {value}")
+    else:
+        print(f"No tags found for IoT Analytics dataset '{dataset_name}'")
+    print()
+
+# List IoT Events detector models
+response_models = iot_events_client.list_detector_models()
+
+# Iterate over the detector models and retrieve tags for each model
+for model in response_models['detectorModelSummaries']:
+    model_name = model['detectorModelName']
+    response_tags = iot_events_client.list_tags_for_resource(resourceArn=model['detectorModelArn'])
+
+    print(f"Tags for IoT Events detector model '{model_name}':")
+    if 'tags' in response_tags:
+        for tag in response_tags['tags']:
+            print(f"Key: {tag['key']}, Value: {tag['value']}")
+    else:
+        print(f"No tags found for IoT Events detector model '{model_name}'")
+    print()
+
+# List IoT Events inputs
+response_inputs = iot_events_client.list_inputs()
+
+# Iterate over the inputs and retrieve tags for each input
+for input_summary in response_inputs['inputSummaries']:
+    input_arn = input_summary['inputArn']
+    response_tags_input = iot_events_client.list_tags_for_resource(
+        resourceArn=input_arn
+    )
+    tags_input = response_tags_input.get('tags', {})
+    if tags_input:
+        print(f"Tags for IoT Events input '{input_arn}':")
+        for key, value in tags_input.items():
+            print(f"Key: {key}, Value: {value}")
+    else:
+        print(f"No tags found for IoT Events input '{input_arn}'")
+    print()
+
+# List MSK clusters
+response_clusters = msk_client.list_clusters()
+
+# Iterate over the clusters and retrieve tags for each cluster
+for cluster in response_clusters['ClusterInfoList']:
+    cluster_arn = cluster['ClusterArn']
+    response_tags = msk_client.list_tags_for_resource(ResourceArn=cluster_arn)
+
+    print(f"Tags for MSK cluster '{cluster_arn}':")
+    if 'Tags' in response_tags:
+        for tag in response_tags['Tags']:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for MSK cluster '{cluster_arn}'")
+    print()
+
+# List Kinesis streams
+response_streams = kinesis_client.list_streams()
+
+# Iterate over the streams and retrieve tags for each stream
+for stream_name in response_streams['StreamNames']:
+    response_tags_stream = kinesis_client.list_tags_for_stream(StreamName=stream_name)
+    tags_stream = response_tags_stream.get('Tags', {})
+    
+    if tags_stream:
+        print(f"Tags for Kinesis stream '{stream_name}':")
+        for key, value in tags_stream.items():
+            print(f"Key: {key}, Value: {value}")
+    else:
+        print(f"No tags found for Kinesis stream '{stream_name}'")
+    print()
+
+# List Kinesis Analytics applications
+response_applications = kinesisanalytics_client.list_applications()
+
+# Iterate over the applications and retrieve tags for each application
+for application in response_applications['ApplicationSummaries']:
+    application_name = application['ApplicationName']
+    response_tags = kinesisanalytics_client.list_tags_for_resource(ResourceARN=application['ApplicationARN'])
+
+    print(f"Tags for Kinesis Analytics application '{application_name}':")
+    if 'Tags' in response_tags:
+        for tag in response_tags['Tags']:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+    else:
+        print(f"No tags found for Kinesis Analytics application '{application_name}'")
+    print()
+
+
+response_ledgers = qldb_client.list_ledgers()
+
+# Iterate over the ledgers and retrieve tags for each ledger
+for ledger in response_ledgers['Ledgers']:
+    ledger_name = ledger['Name']
+    ledger_arn = f"arn:aws:qldb:{region}:{account_id}:ledger/{ledger_name}"
+    try:
+        response_tags = qldb_client.list_tags_for_resource(ResourceArn=ledger_arn)
+        tags = response_tags.get('Tags', {})
+        if tags:
+            print(f"Tags for QLDB ledger '{ledger_name}':")
+            for key, value in tags.items():
+                print(f"Key: {key}, Value: {value}")
+        else:
+            print(f"No tags found for QLDB ledger '{ledger_name}'")
+    except botocore.exceptions.ClientError as e:
+        error_code = e.response.get('Error', {}).get('Code')
+        if error_code == 'NotFoundException':
+            print(f"Resource not found for QLDB ledger '{ledger_name}'")
+        else:
+            print(f"Error occurred while retrieving tags for QLDB ledger '{ledger_name}': {str(e)}")
+    print()
+
+# Retrieve information about RDS instances
+response = rds_client.describe_db_instances()
+for db_instance in response['DBInstances']:
+    db_instance_identifier = db_instance['DBInstanceIdentifier']
+    tags = db_instance.get('TagList')
+
+    if tags is None:
+        print(f"No tags for RDS instance '{db_instance_identifier}'")
+    else:
+        print(f"Tags for RDS instance '{db_instance_identifier}':")
+        for tag in tags:
+            print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        print()
+
+# Retrieve and display tags for the RDS DB cluster
+response = rds_client.describe_db_clusters()
+
+for cluster in response['DBClusters']:
+    cluster_identifier = cluster['DBClusterIdentifier']
+
+    # Retrieve tags for the RDS DB cluster
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=cluster['DBClusterArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS DB Cluster '{cluster_identifier}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS DB Cluster '{cluster_identifier}'")
+    else:
+        print(f"No tags found for RDS DB Cluster '{cluster_identifier}'")
+    print()
+
+# Retrieve and display tags for the RDS Cluster Parameter Group
+response = rds_client.describe_db_cluster_parameter_groups()
+
+for param_group in response['DBClusterParameterGroups']:
+    param_group_name = param_group['DBClusterParameterGroupName']
+
+    # Retrieve tags for the RDS Cluster Parameter Group
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=param_group['DBClusterParameterGroupArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS Cluster Parameter Group '{param_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS Cluster Parameter Group '{param_group_name}'")
+    else:
+        print(f"No tags found for RDS Cluster Parameter Group '{param_group_name}'")
+    print()
+
+# Retrieve and display tags for the RDS Cluster Snapshot
+response = rds_client.describe_db_cluster_snapshots()
+
+for snapshot in response['DBClusterSnapshots']:
+    snapshot_identifier = snapshot['DBClusterSnapshotIdentifier']
+
+    # Retrieve tags for the RDS Cluster Snapshot
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=snapshot['DBClusterSnapshotArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS Cluster Snapshot '{snapshot_identifier}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS Cluster Snapshot '{snapshot_identifier}'")
+    else:
+        print(f"No tags found for RDS Cluster Snapshot '{snapshot_identifier}'")
+    print()
+
+# Retrieve and display tags for the RDS Parameter Group
+response = rds_client.describe_db_parameter_groups()
+
+for param_group in response['DBParameterGroups']:
+    param_group_name = param_group['DBParameterGroupName']
+
+    # Retrieve tags for the RDS Parameter Group
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=param_group['DBParameterGroupArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS Parameter Group '{param_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS Parameter Group '{param_group_name}'")
+    else:
+        print(f"No tags found for RDS Parameter Group '{param_group_name}'")
+    print()
+
+# Retrieve and display tags for the RDS Security Group
+response = rds_client.describe_db_security_groups()
+
+for security_group in response['DBSecurityGroups']:
+    security_group_name = security_group['DBSecurityGroupName']
+
+    # Retrieve tags for the RDS Security Group
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=security_group['DBSecurityGroupArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS Security Group '{security_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS Security Group '{security_group_name}'")
+    else:
+        print(f"No tags found for RDS Security Group '{security_group_name}'")
+    print()
+
+# Retrieve and display tags for the RDS DB Snapshot
+response = rds_client.describe_db_snapshots()
+
+for snapshot in response['DBSnapshots']:
+    snapshot_identifier = snapshot['DBSnapshotIdentifier']
+
+    # Retrieve tags for the RDS DB Snapshot
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=snapshot['DBSnapshotArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS DB Snapshot '{snapshot_identifier}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS DB Snapshot '{snapshot_identifier}'")
+    else:
+        print(f"No tags found for RDS DB Snapshot '{snapshot_identifier}'")
+    print()
+
+# Retrieve and display tags for the RDS DB Subnet Group
+response = rds_client.describe_db_subnet_groups()
+
+for subnet_group in response['DBSubnetGroups']:
+    subnet_group_name = subnet_group['DBSubnetGroupName']
+
+    # Retrieve tags for the RDS DB Subnet Group
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=subnet_group['DBSubnetGroupArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS DB Subnet Group '{subnet_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS DB Subnet Group '{subnet_group_name}'")
+    else:
+        print(f"No tags found for RDS DB Subnet Group '{subnet_group_name}'")
+    print()
+
+# Retrieve and display tags for the RDS Event Subscription
+response = rds_client.describe_event_subscriptions()
+
+for subscription in response['EventSubscriptionsList']:
+    subscription_name = subscription['SubscriptionName']
+
+    # Retrieve tags for the RDS Event Subscription
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=subscription['EventSubscriptionArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS Event Subscription '{subscription_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS Event Subscription '{subscription_name}'")
+    else:
+        print(f"No tags found for RDS Event Subscription '{subscription_name}'")
+    print()
+
+# Retrieve and display tags for the RDS Option Group
+response = rds_client.describe_option_groups()
+
+for option_group in response['OptionGroupsList']:
+    option_group_name = option_group['OptionGroupName']
+
+    # Retrieve tags for the RDS Option Group
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=option_group['OptionGroupArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for RDS Option Group '{option_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for RDS Option Group '{option_group_name}'")
+    else:
+        print(f"No tags found for RDS Option Group '{option_group_name}'")
+    print()
+
+# Retrieve and display tags for the Reserved DB Instance
+response = rds_client.describe_reserved_db_instances()
+
+for reserved_instance in response['ReservedDBInstances']:
+    reserved_instance_id = reserved_instance['ReservedDBInstanceId']
+
+    # Retrieve tags for the Reserved DB Instance
+    response_tags = rds_client.list_tags_for_resource(
+        ResourceName=reserved_instance['ReservedDBInstanceArn']
+    )
+
+    if 'TagList' in response_tags:
+        tags = response_tags['TagList']
+        if tags:
+            print(f"Tags for Reserved DB Instance '{reserved_instance_id}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Reserved DB Instance '{reserved_instance_id}'")
+    else:
+        print(f"No tags found for Reserved DB Instance '{reserved_instance_id}'")
+    print()
+
+# Retrieve and display tags for the Redshift Cluster
+response = redshift_client.describe_clusters()
+
+for cluster in response['Clusters']:
+    cluster_identifier = cluster['ClusterIdentifier']
+
+    # Retrieve tags for the Redshift Cluster
+    response_tags = redshift_client.describe_tags(
+        ResourceName=f"arn:aws:redshift:<REGION>:<ACCOUNT_ID>:cluster:{cluster_identifier}"
+    )
+
+    if 'TaggedResources' in response_tags:
+        tags = response_tags['TaggedResources']
+        if tags:
+            print(f"Tags for Redshift Cluster '{cluster_identifier}':")
+            for tag in tags:
+                print(f"Key: {tag['Tag']['Key']}, Value: {tag['Tag']['Value']}")
+        else:
+            print(f"No tags found for Redshift Cluster '{cluster_identifier}'")
+    else:
+        print(f"No tags found for Redshift Cluster '{cluster_identifier}'")
+    print()
+
+# Retrieve and display tags for the Redshift Cluster Parameter Group
+response = redshift_client.describe_cluster_parameter_groups()
+
+for parameter_group in response['ParameterGroups']:
+    parameter_group_name = parameter_group['ParameterGroupName']
+
+    # Retrieve tags for the Redshift Cluster Parameter Group
+    response_tags = redshift_client.describe_tags(
+        ResourceName=f"arn:aws:redshift:<REGION>:<ACCOUNT_ID>:parametergroup:{parameter_group_name}"
+    )
+
+    if 'TaggedResources' in response_tags:
+        tags = response_tags['TaggedResources']
+        if tags:
+            print(f"Tags for Redshift Cluster Parameter Group '{parameter_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Tag']['Key']}, Value: {tag['Tag']['Value']}")
+        else:
+            print(f"No tags found for Redshift Cluster Parameter Group '{parameter_group_name}'")
+    else:
+        print(f"No tags found for Redshift Cluster Parameter Group '{parameter_group_name}'")
+    print()
+
+# Retrieve and display tags for the Redshift Cluster Subnet Group
+response = redshift_client.describe_cluster_subnet_groups()
+
+for subnet_group in response['ClusterSubnetGroups']:
+    subnet_group_name = subnet_group['ClusterSubnetGroupName']
+
+    # Retrieve tags for the Redshift Cluster Subnet Group
+    response_tags = redshift_client.describe_tags(
+        ResourceName=f"arn:aws:redshift:<REGION>:<ACCOUNT_ID>:clustersubnetgroup:{subnet_group_name}"
+    )
+
+    if 'TaggedResources' in response_tags:
+        tags = response_tags['TaggedResources']
+        if tags:
+            print(f"Tags for Redshift Cluster Subnet Group '{subnet_group_name}':")
+            for tag in tags:
+                print(f"Key: {tag['Tag']['Key']}, Value: {tag['Tag']['Value']}")
+        else:
+            print(f"No tags found for Redshift Cluster Subnet Group '{subnet_group_name}'")
+    else:
+        print(f"No tags found for Redshift Cluster Subnet Group '{subnet_group_name}'")
+    print()
+
+# Retrieve and display tags for the HSM Client Certificate
+response = redshift_client.describe_hsm_client_certificates()
+
+for certificate in response['HsmClientCertificates']:
+    certificate_identifier = certificate['HsmClientCertificateIdentifier']
+
+    # Retrieve tags for the HSM Client Certificate
+    response_tags = redshift_client.describe_tags(
+        ResourceName=f"arn:aws:redshift:<REGION>:<ACCOUNT_ID>:hsm-client-certificate:{certificate_identifier}"
+    )
+
+    if 'TaggedResources' in response_tags:
+        tags = response_tags['TaggedResources']
+        if tags:
+            print(f"Tags for HSM Client Certificate '{certificate_identifier}':")
+            for tag in tags:
+                print(f"Key: {tag['Tag']['Key']}, Value: {tag['Tag']['Value']}")
+        else:
+            print(f"No tags found for HSM Client Certificate '{certificate_identifier}'")
+    else:
+        print(f"No tags found for HSM Client Certificate '{certificate_identifier}'")
+    print()
+
+# Retrieve and display tags for Route 53 domains
+response_domains = route53_client.list_hosted_zones()
+
+for hosted_zone in response_domains['HostedZones']:
+    hosted_zone_id = hosted_zone['Id'].split('/')[-1]
+
+    # Retrieve tags for the hosted zone
+    response_tags = route53_client.list_tags_for_resource(
+        ResourceType='hostedzone',
+        ResourceId=hosted_zone_id
+    )
+
+    if 'ResourceTagSet' in response_tags:
+        tags = response_tags['ResourceTagSet']['Tags']
+        if tags:
+            print(f"Tags for Hosted Zone '{hosted_zone_id}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Hosted Zone '{hosted_zone_id}'")
+    else:
+        print(f"No tags found for Hosted Zone '{hosted_zone_id}'")
+    print()
+
+# Retrieve and display tags for Route 53 health checks
+response_health_checks = route53_client.list_health_checks()
+
+for health_check in response_health_checks['HealthChecks']:
+    health_check_id = health_check['Id']
+
+    # Retrieve tags for the health check
+    response_tags = route53_client.list_tags_for_resource(
+        ResourceType='healthcheck',
+        ResourceId=health_check_id
+    )
+
+    if 'ResourceTagSet' in response_tags:
+        tags = response_tags['ResourceTagSet']['Tags']
+        if tags:
+            print(f"Tags for Health Check '{health_check_id}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Health Check '{health_check_id}'")
+    else:
+        print(f"No tags found for Health Check '{health_check_id}'")
+    print()
+
+# Retrieve and display tags for Route 53 hosted zones
+response_hosted_zones = route53_client.list_hosted_zones()
+
+for hosted_zone in response_hosted_zones['HostedZones']:
+    hosted_zone_id = hosted_zone['Id'].split('/')[-1]
+
+    # Retrieve tags for the hosted zone
+    response_tags = route53_client.list_tags_for_resource(
+        ResourceType='hostedzone',
+        ResourceId=hosted_zone_id
+    )
+
+    if 'ResourceTagSet' in response_tags:
+        tags = response_tags['ResourceTagSet']['Tags']
+        if tags:
+            print(f"Tags for Hosted Zone '{hosted_zone_id}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for Hosted Zone '{hosted_zone_id}'")
+    else:
+        print(f"No tags found for Hosted Zone '{hosted_zone_id}'")
+    print()
+
+# Retrieve and display tags for SNS topics
+response_topics = sns_client.list_topics()
+
+for topic in response_topics['Topics']:
+    topic_arn = topic['TopicArn']
+
+    # Retrieve tags for the topic
+    response_tags = sns_client.list_tags_for_resource(
+        ResourceArn=topic_arn
+    )
+
+    if 'Tags' in response_tags:
+        tags = response_tags['Tags']
+        if tags:
+            print(f"Tags for SNS Topic '{topic_arn}':")
+            for tag in tags:
+                print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+        else:
+            print(f"No tags found for SNS Topic '{topic_arn}'")
+    else:
+        print(f"No tags found for SNS Topic '{topic_arn}'")
+    print()
+
+# Retrieve and display tags for SQS queues
+response_queues = sqs_client.list_queues()
+
+if 'QueueUrls' in response_queues:
+    queue_urls = response_queues['QueueUrls']
+    if queue_urls:
+        for queue_url in queue_urls:
+            # Extract the ARN from the queue URL
+            queue_arn = queue_url.split('/')[-1]
+
+            # Retrieve tags for the queue
+            response_tags = sqs_client.list_queue_tags(
+                QueueUrl=queue_arn
+            )
+
+            if 'Tags' in response_tags:
+                tags = response_tags['Tags']
+                if tags:
+                    print(f"Tags for SQS Queue '{queue_arn}':")
+                    for tag_key, tag_value in tags.items():
+                        print(f"Key: {tag_key}, Value: {tag_value}")
+                else:
+                    print(f"No tags found for SQS Queue '{queue_arn}'")
+            else:
+                print(f"No tags found for SQS Queue '{queue_arn}'")
+            print()
+
+# Retrieve and display tags for the Storage Gateway gateway
+response_gateways = storage_gateway_client.list_gateways()
+
+if 'Gateways' in response_gateways:
+    gateways = response_gateways['Gateways']
+    if gateways:
+        for gateway in gateways:
+            gateway_arn = gateway['GatewayARN']
+
+            # Retrieve tags for the gateway
+            response_tags = storage_gateway_client.list_tags_for_resource(
+                ResourceARN=gateway_arn
+            )
+
+            if 'Tags' in response_tags:
+                tags = response_tags['Tags']
+                if tags:
+                    print(f"Tags for Storage Gateway '{gateway_arn}':")
+                    for tag in tags:
+                        print(f"Key: {tag['Key']}, Value: {tag['Value']}")
+                else:
+                    print(f"No tags found for Storage Gateway '{gateway_arn}'")
+            else:
+                print(f"No tags found for Storage Gateway '{gateway_arn}'")
+            print()

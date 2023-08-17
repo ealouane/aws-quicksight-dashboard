@@ -1,0 +1,101 @@
+import boto3
+
+ 
+
+def extract_iam_username(iam_arn):
+    role_name, email = iam_arn.split('/')[1], iam_arn.split('/')[2]
+    return f"{role_name}/{email}"
+
+ 
+
+def create_quicksight_user(iam_arn, email, namespace='default'):
+    client = boto3.client('quicksight', region_name='us-east-1')  # Update the region if needed.
+    user_name = f'{iam_arn}/{email}'
+
+ 
+
+    response = client.register_user(
+        AwsAccountId='797244591156',  # Replace with your AWS account ID
+        Namespace=namespace,
+        IdentityType='IAM',
+        IamArn=iam_arn,
+        SessionName=email,
+        Email=email,
+        UserRole='READER',  # Replace with appropriate role if needed (e.g., READER, AUTHOR, ADMIN)
+    )
+
+ 
+
+    return user_name
+
+ 
+
+def add_user_to_group(user_arn, group_name, namespace='default'):
+    client = boto3.client('quicksight', region_name='us-east-1')  # Update the region if needed.
+
+ 
+
+    # Get the group information
+    group_response = client.describe_group(
+        AwsAccountId='797244591156',  # Replace with your AWS account ID
+        Namespace=namespace,
+        GroupName=group_name,
+    )
+
+ 
+
+    group_arn = group_response['Group']['Arn']
+
+ 
+
+    iam_username = extract_iam_username(user_arn)
+
+ 
+
+    client.create_group_membership(
+        AwsAccountId='797244591156',  # Replace with your AWS account ID
+        Namespace=namespace,
+        GroupName=group_name,
+        MemberName=iam_username,
+    )
+
+ 
+
+def list_groups(namespace='default'):
+    client = boto3.client('quicksight', region_name='us-east-1')  # Update the region if needed.
+
+ 
+
+    response = client.list_groups(
+        AwsAccountId='797244591156',  # Replace with your AWS account ID
+        Namespace=namespace,
+    )
+
+ 
+
+    group_names = [group['GroupName'] for group in response['GroupList']]
+    return group_names
+
+ 
+
+# List of email addresses to create users and add to the group
+emails_to_add = ['C_Sagayam@acs.org', E_Alouane@acs.org] #CASE SENSATIVE
+iam_role = 'arn:aws:iam::797244591156:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_ACS-Admin-Access_382d076cfe219782'  # Replace with the appropriate IAM role ARN
+group_name = 'cloudops'# Replace with the QuickSight group name
+
+ 
+
+if __name__ == "__main__":
+    existing_groups = list_groups()
+    print("Existing Groups:", existing_groups)
+
+ 
+
+    for email in emails_to_add:
+        user_name = create_quicksight_user(iam_role, email)
+        print(f"User '{user_name}' created successfully.")
+        try:
+            add_user_to_group(user_name, group_name)
+            print(f"User '{user_name}' added to group '{group_name}'.")
+        except Exception as e:
+            print(f"Error adding user '{user_name}' to group '{group_name}': {e}")
